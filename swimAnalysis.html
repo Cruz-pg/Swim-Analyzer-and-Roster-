@@ -1,0 +1,2069 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwimCoach AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --ocean: #0a3d5c;
+  --ocean-mid: #136b8f;
+  --ocean-light: #3fa3c8;
+  --sky: #e8f4fb;
+  --sky-mid: #c6e4f4;
+  --surface: #ffffff;
+  --surface-2: #f2f8fd;
+  --border: #d0e6f3;
+  --border-strong: #9ec9e2;
+  --text: #0d2a3c;
+  --text-2: #3a6a85;
+  --text-3: #7aa5be;
+  --success: #1a8f5c;
+  --success-bg: #d4f0e4;
+  --warn-bg: #fdf3dc;
+  --warn: #a0710a;
+  --rad: 14px;
+  --rad-sm: 8px;
+  --rad-pill: 100px;
+  --shadow: 0 4px 20px -4px rgba(10,61,92,0.12);
+  --shadow-lg: 0 12px 40px -8px rgba(10,61,92,0.18);
+}
+body.dark {
+  --ocean: #5bc0e8;
+  --ocean-mid: #3aa8d8;
+  --ocean-light: #80ceed;
+  --sky: #0d1f2d;
+  --sky-mid: #152d3e;
+  --surface: #0f1e2b;
+  --surface-2: #0a1622;
+  --border: #1d3547;
+  --border-strong: #2a4d64;
+  --text: #e0eef6;
+  --text-2: #89b9d0;
+  --text-3: #456d85;
+  --success: #34c283;
+  --success-bg: #0b2e1e;
+  --warn-bg: #231a06;
+  --warn: #e0a840;
+  --shadow: 0 4px 20px -4px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 40px -8px rgba(0,0,0,0.5);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--sky);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background .3s, color .3s;
+}
+a { color: var(--ocean-mid); }
+
+/* ---- NAVBAR ---- */
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow);
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 600; font-size: 1.15rem; color: var(--ocean);
+}
+.nav-brand .icon {
+  width: 36px; height: 36px; border-radius: var(--rad-sm);
+  background: var(--ocean); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+}
+.nav-right { display: flex; align-items: center; gap: .75rem; }
+.nav-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: .45rem 1rem;
+  border-radius: var(--rad-pill);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: .85rem; font-weight: 500;
+  cursor: pointer; transition: all .2s;
+  font-family: inherit;
+}
+.nav-btn:hover { border-color: var(--ocean-mid); color: var(--ocean-mid); }
+.nav-btn.active { background: var(--ocean); color: #fff; border-color: var(--ocean); }
+#apiKeyInput {
+  padding: .45rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--rad-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: .85rem; font-family: inherit;
+  width: 200px;
+  transition: border .2s;
+}
+#apiKeyInput:focus { outline: none; border-color: var(--ocean-mid); }
+.api-save-btn {
+  padding: .45rem 1rem;
+  border-radius: var(--rad-pill);
+  border: none;
+  background: var(--ocean);
+  color: #fff;
+  font-size: .85rem; font-weight: 600;
+  cursor: pointer; transition: background .2s;
+  font-family: inherit;
+}
+.api-save-btn:hover { background: var(--ocean-mid); }
+
+/* ---- TAB SWITCHER ---- */
+.tab-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex; gap: 0;
+}
+.tab {
+  padding: .75rem 1.5rem;
+  border: none; background: transparent;
+  color: var(--text-2); font-size: .9rem; font-weight: 500;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all .2s;
+  font-family: inherit;
+  display: flex; align-items: center; gap: 8px;
+}
+.tab:hover { color: var(--ocean-mid); }
+.tab.active { color: var(--ocean); border-bottom-color: var(--ocean); }
+
+/* ---- LAYOUT ---- */
+.page { display: none; }
+.page.active { display: block; }
+.content { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+.two-col { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 1.5rem; }
+@media(max-width:1050px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ---- CARDS ---- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rad);
+  box-shadow: var(--shadow);
+}
+.card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-title {
+  font-size: 1rem; font-weight: 600; color: var(--ocean);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-body { padding: 1.5rem; }
+
+/* ---- KNOWLEDGE BASE ---- */
+.kb-row {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .75rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--rad-sm);
+  margin-bottom: 1rem;
+}
+.kb-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+.kb-dot.loaded { background: var(--success); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(26,143,92,.4)} 50%{box-shadow:0 0 0 6px rgba(26,143,92,0)} }
+.kb-label { flex: 1; font-size: .85rem; color: var(--text-2); }
+.kb-file-btn {
+  padding: .35rem .85rem;
+  border-radius: var(--rad-pill);
+  border: 1px solid var(--ocean-mid);
+  background: transparent;
+  color: var(--ocean-mid);
+  font-size: .8rem; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all .2s;
+}
+.kb-file-btn:hover { background: var(--ocean); color: #fff; border-color: var(--ocean); }
+
+/* ---- CATEGORY GRID ---- */
+.cat-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: .5rem;
+  margin-bottom: 1rem;
+}
+.cat-btn {
+  padding: .6rem .5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--rad-sm);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: .82rem; font-weight: 500;
+  cursor: pointer; transition: all .2s;
+  font-family: inherit;
+}
+.cat-btn:hover { border-color: var(--ocean-mid); color: var(--ocean-mid); }
+.cat-btn.active { background: var(--ocean); color: #fff; border-color: var(--ocean); }
+
+/* ---- MEDIA TYPE TOGGLE ---- */
+.media-toggle {
+  display: flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--rad-pill);
+  padding: 4px;
+  margin-bottom: 1rem;
+  gap: 4px;
+}
+.media-btn {
+  flex: 1; padding: .5rem;
+  border: none; border-radius: var(--rad-pill);
+  background: transparent; color: var(--text-2);
+  font-size: .85rem; font-weight: 500;
+  cursor: pointer; transition: all .2s; font-family: inherit;
+}
+.media-btn.active {
+  background: var(--surface); color: var(--ocean);
+  box-shadow: 0 1px 6px rgba(10,61,92,.1);
+}
+
+/* ---- UPLOAD AREA ---- */
+.upload-area {
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--rad);
+  padding: 2.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--surface-2);
+  margin-bottom: 1rem;
+}
+.upload-area:hover, .upload-area.drag-over { border-color: var(--ocean-light); background: var(--sky-mid); }
+.upload-icon { font-size: 2.5rem; margin-bottom: .75rem; color: var(--ocean-light); }
+.upload-title { font-size: 1rem; font-weight: 600; color: var(--text-2); margin-bottom: .25rem; }
+.upload-sub { font-size: .8rem; color: var(--text-3); }
+
+/* ---- PREVIEW ---- */
+.preview-wrap {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--rad);
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.preview-wrap img, .preview-wrap video {
+  max-width: 100%; max-height: 300px;
+  border-radius: var(--rad-sm);
+  border: 2px solid var(--ocean-light);
+}
+.preview-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: .5rem;
+  padding: .3rem .85rem;
+  background: var(--success-bg);
+  color: var(--success);
+  border-radius: var(--rad-pill);
+  font-size: .8rem; font-weight: 600;
+  border: 1px solid var(--success);
+}
+
+/* ---- ANALYZE BTN ---- */
+.analyze-btn {
+  width: 100%; padding: .9rem;
+  border: none; border-radius: var(--rad-pill);
+  background: var(--ocean);
+  color: #fff; font-size: .95rem; font-weight: 600;
+  cursor: pointer; transition: all .2s; font-family: inherit;
+  margin-bottom: 1rem;
+  opacity: .45; pointer-events: none;
+}
+.analyze-btn.ready { opacity: 1; pointer-events: all; }
+.analyze-btn.ready:hover { background: var(--ocean-mid); transform: translateY(-1px); }
+
+/* ---- PROGRESS ---- */
+.progress-wrap { margin-bottom: 1rem; display: none; }
+.progress-wrap.show { display: block; }
+.progress-bar-bg {
+  height: 6px; border-radius: 3px;
+  background: var(--border); overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 3px;
+  background: var(--ocean-light);
+  width: 0%; transition: width .3s;
+}
+.progress-label { font-size: .78rem; color: var(--text-3); margin-top: .4rem; text-align: center; }
+
+/* ---- ANALYSIS RESULT ---- */
+.analysis-result {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--rad);
+  padding: 1.25rem;
+  display: none;
+}
+.result-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: .3rem .85rem;
+  background: var(--ocean);
+  color: #fff;
+  border-radius: var(--rad-pill);
+  font-size: .8rem; font-weight: 600;
+  margin-bottom: .75rem;
+}
+.result-content {
+  font-size: .9rem; line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ---- ANALYSIS HISTORY ---- */
+.history-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--rad);
+  overflow: hidden;
+  margin-top: 1rem;
+  display: none;
+}
+.history-header {
+  padding: .75rem 1.25rem;
+  background: var(--surface-2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .85rem; font-weight: 600; color: var(--text-2);
+  user-select: none;
+  border: none; width: 100%; font-family: inherit; text-align: left;
+}
+.history-header:hover { color: var(--ocean); }
+.history-list { display: none; max-height: 320px; overflow-y: auto; }
+.history-item {
+  padding: .75rem 1.25rem;
+  border-top: 1px solid var(--border);
+  cursor: pointer; transition: background .15s;
+}
+.history-item:hover { background: var(--sky-mid); }
+.history-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .3rem; }
+.history-item-cat { font-weight: 600; color: var(--ocean); font-size: .82rem; text-transform: capitalize; }
+.history-item-time { color: var(--text-3); font-size: .75rem; }
+.history-item-preview { color: var(--text-2); line-height: 1.5; font-size: .82rem; }
+
+/* ---- CHAT ---- */
+.chat-wrap {
+  display: flex; flex-direction: column;
+  height: 780px;
+}
+.chat-messages {
+  flex: 1; overflow-y: auto;
+  padding: 1rem 0;
+  display: flex; flex-direction: column; gap: .75rem;
+}
+.chat-messages::-webkit-scrollbar { width: 5px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+.msg { max-width: 88%; }
+.msg-user { align-self: flex-end; }
+.msg-ai { align-self: flex-start; }
+.msg-bubble {
+  padding: .75rem 1.1rem;
+  border-radius: 16px;
+  font-size: .88rem; line-height: 1.55;
+  white-space: pre-wrap;
+}
+.msg-user .msg-bubble { background: var(--ocean); color: #fff; border-bottom-right-radius: 4px; }
+.msg-ai .msg-bubble { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.msg-time { font-size: .72rem; color: var(--text-3); margin-top: 3px; padding: 0 4px; }
+.msg-user .msg-time { text-align: right; }
+.chat-footer {
+  padding-top: .75rem;
+  border-top: 1px solid var(--border);
+  display: flex; gap: .5rem; align-items: center;
+}
+.chat-input {
+  flex: 1; padding: .7rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--rad-pill);
+  background: var(--surface-2);
+  color: var(--text); font-size: .88rem;
+  font-family: inherit; transition: border .2s;
+}
+.chat-input:focus { outline: none; border-color: var(--ocean-mid); }
+.send-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; background: var(--ocean);
+  color: #fff; font-size: 1rem;
+  cursor: pointer; transition: background .2s;
+  flex-shrink: 0;
+}
+.send-btn:hover { background: var(--ocean-mid); }
+.send-btn:disabled { opacity: .45; cursor: default; }
+
+/* ---- LOADING DOTS ---- */
+.dots span {
+  display: inline-block; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--ocean-light);
+  margin: 0 2px; animation: dotbounce 1.2s infinite;
+}
+.dots span:nth-child(2) { animation-delay: .2s; }
+.dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes dotbounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+/* ---- ROSTER PAGE ---- */
+.roster-top {
+  display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: start;
+  margin-bottom: 1.5rem;
+}
+@media(max-width:900px) { .roster-top { grid-template-columns:1fr; } }
+.add-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rad);
+  box-shadow: var(--shadow);
+  padding: 1.25rem 1.5rem;
+}
+.form-title { font-weight: 600; color: var(--ocean); margin-bottom: 1rem; font-size: .95rem; display: flex; align-items: center; gap: 8px; }
+.form-fields { display: flex; flex-wrap: wrap; gap: .6rem; align-items: flex-end; }
+.field-group { display: flex; flex-direction: column; gap: 4px; }
+.field-group label { font-size: .75rem; color: var(--text-3); font-weight: 500; }
+.field-group input, .field-group select {
+  padding: .5rem .85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--rad-pill);
+  background: var(--surface-2);
+  color: var(--text); font-size: .85rem; font-family: inherit;
+  transition: border .2s;
+}
+.field-group input:focus, .field-group select:focus { outline: none; border-color: var(--ocean-mid); }
+.add-btn {
+  padding: .6rem 1.4rem;
+  border: none; border-radius: var(--rad-pill);
+  background: var(--ocean); color: #fff;
+  font-size: .85rem; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  transition: background .2s; white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+}
+.add-btn:hover { background: var(--ocean-mid); }
+
+/* ---- LEGEND ---- */
+.legend {
+  display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+  padding: .75rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rad);
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow);
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 500; color: var(--text-2); }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+.d-aaaa { background: #0a3d5c; }
+.d-aaa  { background: #136b8f; }
+.d-aa   { background: #3fa3c8; }
+.d-a    { background: #7dc8e4; }
+.d-bb   { background: #c9a43a; }
+.legend-right { margin-left: auto; font-size: .78rem; color: var(--text-3); }
+
+/* ---- TABLE ---- */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rad);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.table-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .5rem;
+}
+.table-header h3 { font-size: .95rem; font-weight: 600; color: var(--ocean); display: flex; align-items: center; gap: 8px; }
+.count-badge {
+  padding: .2rem .75rem;
+  background: var(--sky-mid); color: var(--ocean);
+  border-radius: var(--rad-pill); font-size: .78rem; font-weight: 600;
+  border: 1px solid var(--border);
+}
+.export-btn {
+  padding: .3rem .85rem;
+  border-radius: var(--rad-pill);
+  border: 1px solid var(--ocean-mid);
+  background: transparent;
+  color: var(--ocean-mid);
+  font-size: .78rem; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all .2s;
+  display: flex; align-items: center; gap: 5px;
+  margin-left: auto;
+}
+.export-btn:hover { background: var(--ocean); color: #fff; border-color: var(--ocean); }
+.data-table { width: 100%; border-collapse: collapse; min-width: 750px; overflow-x: auto; }
+.table-scroll { overflow-x: auto; }
+.data-table th {
+  text-align: left; padding: .7rem 1.2rem;
+  background: var(--surface-2);
+  color: var(--text-3); font-size: .75rem; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+.data-table th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.data-table th.sortable:hover { color: var(--ocean-mid); }
+.sort-arrow { margin-left: 3px; color: var(--ocean-light); font-size: .7rem; }
+.data-table td { padding: .85rem 1.2rem; border-bottom: 1px solid var(--border); font-size: .85rem; }
+.data-table tr:last-child td { border-bottom: none; }
+.swimmer-cell { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--sky-mid); color: var(--ocean);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: .8rem; flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.time-chip {
+  font-family: 'DM Mono', monospace;
+  background: var(--surface-2); color: var(--text);
+  padding: .2rem .7rem; border-radius: var(--rad-pill);
+  font-size: .82rem; border: 1px solid var(--border);
+}
+.std-badge {
+  padding: .2rem .7rem; border-radius: var(--rad-pill);
+  font-size: .75rem; font-weight: 700;
+}
+.std-aaaa { background: #0a3d5c; color: #e0f0f8; }
+.std-aaa  { background: #136b8f; color: #d0eaf8; }
+.std-aa   { background: #3fa3c8; color: #e6f6ff; }
+.std-a    { background: #7dc8e4; color: #0a3d5c; }
+.std-bb   { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); }
+.std-\-   { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border); }
+.del-btn { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: .9rem; transition: color .2s; }
+.del-btn:hover { color: #c0392b; }
+.empty-row td { padding: 3rem; text-align: center; color: var(--text-3); font-style: italic; }
+
+/* ---- GROUPED ROSTER ROWS ---- */
+.swimmer-name-cell { vertical-align: middle; }
+.group-first > td { border-top: 2px solid var(--border-strong); }
+.data-table tbody tr:first-child.group-first > td { border-top: none; }
+.group-sub > td { border-top: 1px dashed var(--border); border-bottom: 1px solid var(--border); }
+.event-sub { padding-left: 2.2rem !important; color: var(--text-2); }
+.table-footer {
+  padding: .75rem 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: .82rem; color: var(--text-2);
+  background: var(--surface-2);
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ---- REGION BAR ---- */
+.region-bar {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--rad);
+  padding: .75rem 1.25rem;
+  display: flex; align-items: center; gap: .75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.region-bar label { font-size: .82rem; color: var(--text-3); font-weight: 500; }
+.region-bar select {
+  padding: .4rem .85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--rad-pill);
+  background: var(--surface);
+  color: var(--text); font-size: .85rem; font-family: inherit;
+}
+.region-bar select:focus { outline: none; border-color: var(--ocean-mid); }
+.region-note { font-size: .78rem; color: var(--text-3); margin-left: auto; font-style: italic; }
+
+/* ---- TOAST ---- */
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--success);
+  padding: .75rem 1.5rem; border-radius: var(--rad-pill);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(120%); transition: transform .3s;
+  font-size: .88rem; z-index: 999; color: var(--text);
+}
+.toast.show { transform: translateX(0); }
+.toast.err { border-left-color: #c0392b; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="icon"><i class="fas fa-water"></i></div>
+    SwimCoach AI
+  </div>
+  <div class="nav-right">
+    <input type="file" id="kbFileInput" accept=".md,.txt" style="display:none" onchange="loadKnowledge(this)">
+    <button class="nav-btn" id="kbNavBtn" onclick="document.getElementById('kbFileInput').click()">
+      <i class="fas fa-book"></i> <span id="kbNavLabel">Load KB</span>
+    </button>
+    <input type="password" id="apiKeyInput" placeholder="API key (OpenAI/Anthropic)">
+    <button class="api-save-btn" onclick="saveKey()">Save</button>
+    <button class="nav-btn" id="themeBtn" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+  </div>
+</nav>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab active" id="tab-analysis" onclick="switchTab('analysis')"><i class="fas fa-video"></i> Stroke Analysis</button>
+  <button class="tab" id="tab-roster" onclick="switchTab('roster')"><i class="fas fa-users"></i> Roster &amp; Standards</button>
+</div>
+
+<!-- ====== ANALYSIS PAGE ====== -->
+<div class="page active" id="page-analysis">
+  <div class="content">
+    <div class="two-col">
+
+      <!-- LEFT: UPLOAD & ANALYZE -->
+      <div>
+        <div class="card" style="margin-bottom:1.5rem;">
+          <div class="card-header">
+            <span class="card-title"><i class="fas fa-film"></i> Upload &amp; Analyze</span>
+          </div>
+          <div class="card-body">
+
+            <!-- KB row -->
+            <div class="kb-row">
+              <div class="kb-dot" id="kbDot"></div>
+              <span class="kb-label" id="kbLabel">No knowledge base loaded</span>
+              <button class="kb-file-btn" onclick="document.getElementById('kbFileInput').click()">Choose .md file</button>
+            </div>
+
+            <!-- Categories -->
+            <div class="cat-grid">
+              <button class="cat-btn active" onclick="setCategory(this,'strokes')">🏊 Strokes</button>
+              <button class="cat-btn" onclick="setCategory(this,'starts')">🏁 Starts</button>
+              <button class="cat-btn" onclick="setCategory(this,'turns')">🔄 Turns</button>
+              <button class="cat-btn" onclick="setCategory(this,'finishes')">🎯 Finishes</button>
+              <button class="cat-btn" onclick="setCategory(this,'underwater')">🌊 Underwater</button>
+              <button class="cat-btn" onclick="setCategory(this,'kicks')">🦵 Kicks</button>
+            </div>
+
+            <!-- Media toggle -->
+            <div class="media-toggle">
+              <button class="media-btn active" id="btn-image" onclick="setMedia('image')">📷 Photo</button>
+              <button class="media-btn" id="btn-video" onclick="setMedia('video')">🎥 Video</button>
+            </div>
+
+            <!-- Upload -->
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+              <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+              <div class="upload-title">Click to upload, drag &amp; drop, or paste</div>
+              <div class="upload-sub">JPG · PNG · MP4 — Max 100 MB</div>
+            </div>
+            <input type="file" id="fileInput" style="display:none" accept="image/*" onchange="handleFile(this)">
+
+            <!-- Preview -->
+            <div class="preview-wrap" id="previewWrap" style="display:none">
+              <img id="imgPrev" style="display:none">
+              <video id="vidPrev" controls style="display:none"></video>
+              <div><span class="preview-badge"><i class="fas fa-check"></i> Ready for analysis</span></div>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-wrap" id="progressWrap">
+              <div class="progress-bar-bg"><div class="progress-fill" id="progressFill"></div></div>
+              <div class="progress-label" id="progressLabel">Processing...</div>
+            </div>
+
+            <!-- Analyze btn -->
+            <button class="analyze-btn" id="analyzeBtn" onclick="analyzeStroke()">
+              <i class="fas fa-brain"></i>&nbsp; Analyze with AI
+            </button>
+
+            <!-- Result -->
+            <div class="analysis-result" id="analysisResult">
+              <div class="result-label" id="resultLabel"><i class="fas fa-check-circle"></i> Analysis</div>
+              <div class="result-content" id="resultContent"></div>
+            </div>
+
+            <!-- History -->
+            <div class="history-panel" id="historyPanel">
+              <button class="history-header" onclick="toggleHistory()">
+                <span><i class="fas fa-history"></i> Recent Analyses</span>
+                <i class="fas fa-chevron-down" id="historyChevron"></i>
+              </button>
+              <div class="history-list" id="historyList"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: CHAT -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="fas fa-comments"></i> AI Swim Coach Chat</span>
+            <button style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:1rem;" onclick="clearChat()"><i class="fas fa-trash-alt"></i></button>
+          </div>
+          <div class="card-body" style="padding-bottom:.75rem;">
+            <div class="chat-wrap">
+              <div class="chat-messages" id="chatMessages">
+                <div class="msg msg-ai">
+                  <div class="msg-bubble">👋 Welcome! I'm your AI swimming coach.
+
+I can help with:
+• 🏊 All swimming strokes
+• 🏁 Starts &amp; dives
+• 🔄 Turns &amp; flip turns
+• 🎯 Finishes
+• 🌊 Underwater technique
+• 🦵 Kick drills
+
+Upload a photo or video and ask me anything!</div>
+                  <div class="msg-time">Just now</div>
+                </div>
+              </div>
+              <div class="chat-footer">
+                <input class="chat-input" id="chatInput" placeholder="Ask your coach..." onkeypress="if(event.key==='Enter')sendChat()">
+                <button class="send-btn" id="chatSendBtn" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ====== ROSTER PAGE ====== -->
+<div class="page" id="page-roster">
+  <div class="content">
+
+    <!-- Add form -->
+    <div class="add-form" style="margin-bottom:1.25rem;">
+      <div class="form-title"><i class="fas fa-user-plus"></i> Add Swimmer</div>
+      <div class="form-fields">
+        <div class="field-group"><label>Name</label>
+          <input type="text" id="rName" placeholder="Athlete name" style="width:140px"
+            onkeypress="if(event.key==='Enter')addSwimmer()">
+        </div>
+        <div class="field-group"><label>Gender</label>
+          <select id="rGender"><option value="M">Male</option><option value="F">Female</option></select>
+        </div>
+        <div class="field-group"><label>Age group</label>
+          <select id="rAge">
+            <option value="10u">10 &amp; under</option>
+            <option value="11-12" selected>11–12</option>
+            <option value="13-14">13–14</option>
+            <option value="15-16">15–16</option>
+            <option value="17-18">17–18</option>
+          </select>
+        </div>
+        <div class="field-group"><label>Stroke</label>
+          <select id="rStroke">
+            <option value="FR">Freestyle</option><option value="BK">Backstroke</option>
+            <option value="BR">Breaststroke</option><option value="FL">Butterfly</option>
+            <option value="IM">IM</option>
+          </select>
+        </div>
+        <div class="field-group"><label>Distance</label>
+          <select id="rDist">
+            <option value="50">50</option><option value="100" selected>100</option>
+            <option value="200">200</option><option value="400">400</option>
+            <option value="500">500</option><option value="1000">1000</option>
+            <option value="1500">1500</option><option value="1650">1650</option>
+          </select>
+        </div>
+        <div class="field-group"><label>Course</label>
+          <select id="rCourse"><option value="SCY">SCY (yards)</option><option value="LCM">LCM (meters)</option></select>
+        </div>
+        <div class="field-group"><label>Time (e.g. 54.3 or 1:23.45)</label>
+          <input type="text" id="rTime" placeholder="54.3 or 1:23.45" style="width:120px"
+            onkeypress="if(event.key==='Enter')addSwimmer()">
+        </div>
+        <button class="add-btn" onclick="addSwimmer()"><i class="fas fa-plus"></i> Add</button>
+      </div>
+    </div>
+
+    <!-- Region bar -->
+    <div class="region-bar">
+      <i class="fas fa-map-marker-alt" style="color:var(--ocean-mid)"></i>
+      <label>Region:</label>
+      <select id="regionSelect" onchange="updateRegionDisplay()">
+        <option value="National">🇺🇸 National (USA Swimming)</option>
+        <optgroup label="─── Eastern Zone ───">
+          <option value="Adirondack">Adirondack (AD) — Upstate NY</option>
+          <option value="Allegheny Mountain">Allegheny Mountain (AM) — Western PA</option>
+          <option value="Connecticut">Connecticut (CT)</option>
+          <option value="Long Island">Long Island (LI) — NY</option>
+          <option value="Maryland">Maryland (MD)</option>
+          <option value="Metropolitan">Metropolitan (MR) — NYC Metro &amp; NJ</option>
+          <option value="New England">New England (NE) — MA, ME, NH, RI, VT</option>
+          <option value="New Jersey">New Jersey (NJ)</option>
+          <option value="Niagara">Niagara (NI) — Western NY</option>
+          <option value="Potomac Valley">Potomac Valley (PV) — Northern VA &amp; DC</option>
+          <option value="Puerto Rico">Puerto Rico (PR)</option>
+          <option value="Virginia">Virginia (VA)</option>
+        </optgroup>
+        <optgroup label="─── Southern Zone ───">
+          <option value="Border">Border (BD) — El Paso / S. New Mexico</option>
+          <option value="Florida">Florida (FL) — North/Central FL</option>
+          <option value="Florida Gold Coast">Florida Gold Coast (FG) — South FL</option>
+          <option value="Georgia">Georgia (GA)</option>
+          <option value="Gulf">Gulf (GU) — MS &amp; LA Gulf Coast</option>
+          <option value="Kentucky">Kentucky (KY)</option>
+          <option value="North Carolina">North Carolina (NC)</option>
+          <option value="North Texas">North Texas (NT)</option>
+          <option value="South Carolina">South Carolina (SC)</option>
+          <option value="South Texas">South Texas (ST)</option>
+          <option value="Southeastern">Southeastern (SE) — AL &amp; TN</option>
+          <option value="Tennessee">Tennessee (TN)</option>
+          <option value="Virgin Islands">Virgin Islands (VI)</option>
+          <option value="West Texas">West Texas (WT)</option>
+          <option value="West Virginia">West Virginia (WV)</option>
+        </optgroup>
+        <optgroup label="─── Central Zone ───">
+          <option value="Arkansas">Arkansas (AR)</option>
+          <option value="Illinois">Illinois (IL)</option>
+          <option value="Indiana">Indiana (IN)</option>
+          <option value="Iowa">Iowa (IA)</option>
+          <option value="Lake Erie">Lake Erie (LE)</option>
+          <option value="Michigan">Michigan (MI)</option>
+          <option value="Midwestern">Midwestern (MW) — KS &amp; NE</option>
+          <option value="Minnesota">Minnesota (MN)</option>
+          <option value="Missouri Valley">Missouri Valley (MV) — MO</option>
+          <option value="North Dakota">North Dakota (ND)</option>
+          <option value="Ohio">Ohio (OH)</option>
+          <option value="Oklahoma">Oklahoma (OK)</option>
+          <option value="Ozark">Ozark (OZ) — AR/MO</option>
+          <option value="South Dakota">South Dakota (SD)</option>
+          <option value="Wisconsin">Wisconsin (WI)</option>
+        </optgroup>
+        <optgroup label="─── Western Zone ───">
+          <option value="Alaska">Alaska (AK)</option>
+          <option value="Arizona">Arizona (AZ)</option>
+          <option value="Central California">Central California (CC)</option>
+          <option value="Colorado">Colorado (CO)</option>
+          <option value="Hawaii">Hawaii (HI)</option>
+          <option value="Inland Empire">Inland Empire (IE) — Inland SoCal</option>
+          <option value="Montana">Montana (MT)</option>
+          <option value="New Mexico">New Mexico (NM)</option>
+          <option value="Pacific">Pacific (PC) — Northern CA</option>
+          <option value="Pacific Northwest">Pacific Northwest (PN) — OR</option>
+          <option value="San Diego-Imperial">San Diego-Imperial (SI)</option>
+          <option value="Sierra Nevada">Sierra Nevada (SN) — NV &amp; E. CA</option>
+          <option value="Snake River">Snake River (SR) — ID</option>
+          <option value="Southern California">Southern California (SO)</option>
+          <option value="Utah">Utah (UT)</option>
+          <option value="Washington">Washington (WA)</option>
+          <option value="Wyoming">Wyoming (WY)</option>
+        </optgroup>
+      </select>
+      <span class="region-note" id="regionNote">Standards: 2024–2028 USA Swimming Motivational</span>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot d-aaaa"></span>AAAA National</div>
+      <div class="legend-item"><span class="legend-dot d-aaa"></span>AAA Sectional</div>
+      <div class="legend-item"><span class="legend-dot d-aa"></span>AA State</div>
+      <div class="legend-item"><span class="legend-dot d-a"></span>A Silver</div>
+      <div class="legend-item"><span class="legend-dot d-bb"></span>BB Bronze</div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3><i class="fas fa-list"></i> Roster</h3>
+        <span class="count-badge" id="rosterCount">0 swimmers</span>
+        <button class="export-btn" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead><tr>
+            <th class="sortable" onclick="sortRoster('name')">Athlete <span class="sort-arrow" id="sort-name"></span></th>
+            <th class="sortable" onclick="sortRoster('event')">Event <span class="sort-arrow" id="sort-event"></span></th>
+            <th class="sortable" onclick="sortRoster('time')">Time <span class="sort-arrow" id="sort-time"></span></th>
+            <th class="sortable" onclick="sortRoster('std')">Standard <span class="sort-arrow" id="sort-std"></span></th>
+            <th>Course</th><th></th>
+          </tr></thead>
+          <tbody id="rosterBody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer" id="rosterFooter">
+        <i class="fas fa-chart-line"></i> Add swimmers to build your roster
+      </div>
+    </div>
+
+    <!-- Roster chat -->
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-robot"></i> Team Assistant</span>
+        <span class="count-badge" id="rosterChatCount">0 swimmers</span>
+      </div>
+      <div class="card-body" style="padding-bottom:.75rem;">
+        <div class="chat-wrap" style="height:300px;">
+          <div class="chat-messages" id="rosterChatMessages">
+            <div class="msg msg-ai">
+              <div class="msg-bubble">👋 Hello! I can see your full roster. Ask me about times, qualifying standards, or training advice for your region.</div>
+              <div class="msg-time">Now</div>
+            </div>
+          </div>
+          <div class="chat-footer">
+            <input class="chat-input" id="rosterChatInput" placeholder="Ask about your team..." onkeypress="if(event.key==='Enter')sendRosterChat()">
+            <button class="send-btn" id="rosterSendBtn" onclick="sendRosterChat()"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+// =========================================================
+// STATE
+// =========================================================
+let apiKey = localStorage.getItem('sc_api_key') || '';
+let kbText = localStorage.getItem('sc_kb') || '';
+let kbLoaded = !!kbText;
+let currentCategory = 'strokes';
+let mediaType = 'image';
+let currentFile = null;
+let imgBase64 = null;
+let videoFrames = [];
+let swimmers = [];
+let isDark = localStorage.getItem('sc_dark') === '1';
+let chatHistory = [];
+let rosterChatHistory = [];
+let analysisHistory = JSON.parse(localStorage.getItem('sc_analyses') || '[]');
+let sortState = { col: null, dir: 1 };
+let historyOpen = false;
+
+if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
+if (isDark) document.body.classList.add('dark');
+updateKbUI();
+renderRoster();
+renderAnalysisHistory();
+
+// =========================================================
+// THEME
+// =========================================================
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('dark', isDark);
+  localStorage.setItem('sc_dark', isDark ? '1' : '0');
+  document.getElementById('themeBtn').innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+}
+if (isDark) document.getElementById('themeBtn').innerHTML = '<i class="fas fa-sun"></i>';
+
+// =========================================================
+// API KEY
+// =========================================================
+function saveKey() {
+  apiKey = document.getElementById('apiKeyInput').value.trim();
+  if (apiKey) { localStorage.setItem('sc_api_key', apiKey); showToast('API key saved'); }
+  else showToast('Enter a valid key', true);
+}
+
+// =========================================================
+// TABS
+// =========================================================
+function switchTab(t) {
+  ['analysis','roster'].forEach(id => {
+    document.getElementById('page-' + id).classList.toggle('active', id === t);
+    document.getElementById('tab-' + id).classList.toggle('active', id === t);
+  });
+}
+
+// =========================================================
+// KNOWLEDGE BASE
+// =========================================================
+function loadKnowledge(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    kbText = e.target.result; kbLoaded = true;
+    localStorage.setItem('sc_kb', kbText);
+    updateKbUI(file.name);
+    showToast('Knowledge base loaded');
+  };
+  r.readAsText(file);
+}
+function updateKbUI(filename) {
+  const dot = document.getElementById('kbDot');
+  const lbl = document.getElementById('kbLabel');
+  const nav = document.getElementById('kbNavLabel');
+  if (kbLoaded) {
+    dot.classList.add('loaded');
+    lbl.textContent = filename ? filename + ' loaded' : 'Knowledge base ready';
+    nav.textContent = 'KB ✓';
+  } else {
+    dot.classList.remove('loaded');
+    lbl.textContent = 'No knowledge base loaded';
+    nav.textContent = 'Load KB';
+  }
+}
+
+// =========================================================
+// CATEGORY / MEDIA
+// =========================================================
+function setCategory(btn, cat) {
+  currentCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function setMedia(type) {
+  mediaType = type;
+  document.getElementById('btn-image').classList.toggle('active', type === 'image');
+  document.getElementById('btn-video').classList.toggle('active', type === 'video');
+  document.getElementById('fileInput').accept = type === 'image' ? 'image/*' : 'video/*';
+  currentFile = null; imgBase64 = null; videoFrames = [];
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('analyzeBtn').classList.remove('ready');
+}
+
+// =========================================================
+// FILE HANDLING
+// =========================================================
+function handleFile(input) {
+  const file = Array.isArray(input.files) ? input.files[0] : input.files[0];
+  if (!file) return;
+  if (file.size > 100 * 1024 * 1024) { showToast('Max 100 MB', true); return; }
+  currentFile = file;
+  const url = URL.createObjectURL(file);
+  const imgEl = document.getElementById('imgPrev');
+  const vidEl = document.getElementById('vidPrev');
+  if (file.type.startsWith('image/')) {
+    imgEl.style.display = 'block'; vidEl.style.display = 'none';
+    imgEl.src = url;
+    const rd = new FileReader();
+    rd.onload = e => imgBase64 = e.target.result;
+    rd.readAsDataURL(file);
+  } else {
+    vidEl.style.display = 'block'; imgEl.style.display = 'none';
+    vidEl.src = url;
+  }
+  document.getElementById('previewWrap').style.display = 'block';
+  document.getElementById('analyzeBtn').classList.add('ready');
+  addAIMsg(chatMessages, `✅ ${currentCategory} ${mediaType} received — ready to analyze!`);
+}
+
+// Drag & drop
+const ua = document.getElementById('uploadArea');
+ua.addEventListener('dragover', e => { e.preventDefault(); ua.classList.add('drag-over'); });
+ua.addEventListener('dragleave', () => ua.classList.remove('drag-over'));
+ua.addEventListener('drop', e => {
+  e.preventDefault(); ua.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile({ files: [f] });
+});
+
+// Paste image from clipboard
+document.addEventListener('paste', e => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      if (file) {
+        setMedia('image');
+        handleFile({ files: [file] });
+        showToast('Image pasted from clipboard');
+      }
+      break;
+    }
+  }
+});
+
+// =========================================================
+// VIDEO FRAME CAPTURE
+// =========================================================
+function captureFrames(file) {
+  return new Promise((resolve, reject) => {
+    const vid = document.createElement('video');
+    vid.preload = 'auto';
+    vid.src = URL.createObjectURL(file);
+    vid.onloadedmetadata = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+      const ctx = canvas.getContext('2d');
+      const pts = currentCategory === 'starts' ? [.1,.3,.6,.9] :
+                  currentCategory === 'turns'  ? [.2,.4,.6,.8] : [.2,.5,.8];
+      const frames = []; let i = 0;
+      function next() {
+        if (i >= pts.length) { URL.revokeObjectURL(vid.src); resolve(frames); return; }
+        vid.currentTime = vid.duration * pts[i];
+        vid.onseeked = () => {
+          ctx.drawImage(vid,0,0);
+          frames.push(canvas.toDataURL('image/jpeg',.8));
+          setProgress((++i/pts.length)*50, `Capturing frame ${i}/${pts.length}`);
+          next();
+        };
+      }
+      next();
+    };
+    vid.onerror = reject;
+  });
+}
+
+// =========================================================
+// SYSTEM PROMPT
+// =========================================================
+function systemPrompt() {
+  const cats = { strokes:'stroke technique', starts:'start/dive technique', turns:'turn technique',
+    finishes:'finish technique', underwater:'underwater technique', kicks:'kick technique' };
+  let s = `You are an elite swimming coach specializing in ${cats[currentCategory]}. Provide specific, actionable feedback.`;
+  if (kbLoaded && kbText) s += `\n\nKnowledge base:\n${kbText}`;
+  return s;
+}
+
+// =========================================================
+// ANTHROPIC IMAGE FORMAT CONVERSION
+// =========================================================
+function toAnthropicContent(content) {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return content;
+  return content.map(block => {
+    if (block.type !== 'image_url') return block;
+    const url = block.image_url.url;
+    if (url.startsWith('data:')) {
+      const semicolonIdx = url.indexOf(';');
+      const mediaType = url.slice(5, semicolonIdx);
+      const data = url.slice(url.indexOf(',') + 1);
+      return { type: 'image', source: { type: 'base64', media_type: mediaType, data } };
+    }
+    return { type: 'image', source: { type: 'url', url } };
+  });
+}
+
+// =========================================================
+// AI CALL — streaming supported
+// onChunk(text) is called per token; omit for non-streaming
+// =========================================================
+async function callAI(messages, maxTokens = 800, onChunk = null) {
+  const isAnthropic = apiKey.startsWith('sk-ant-');
+
+  if (isAnthropic) {
+    const sys = messages.find(m => m.role === 'system');
+    const userMsgs = messages
+      .filter(m => m.role !== 'system')
+      .map(m => ({ ...m, content: toAnthropicContent(m.content) }));
+
+    const body = {
+      model: 'claude-sonnet-4-6',
+      max_tokens: maxTokens,
+      messages: userMsgs,
+      stream: true
+    };
+    if (sys) body.system = sys.content;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Anthropic API error'); }
+    return readSSE(res, onChunk, d => {
+      if (d.type === 'content_block_delta' && d.delta?.text) return d.delta.text;
+    });
+
+  } else {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: 'gpt-4o', messages, max_tokens: maxTokens, stream: true })
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'OpenAI API error'); }
+    return readSSE(res, onChunk, d => {
+      if (d === '[DONE]') return null;
+      const text = d.choices?.[0]?.delta?.content;
+      return text || null;
+    });
+  }
+}
+
+async function readSSE(res, onChunk, extract) {
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let full = '';
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const raw = line.slice(6).trim();
+      if (!raw) continue;
+      let data;
+      try { data = raw === '[DONE]' ? '[DONE]' : JSON.parse(raw); } catch { continue; }
+      const text = extract(data);
+      if (text) {
+        full += text;
+        if (onChunk) onChunk(text);
+      }
+    }
+  }
+  return full;
+}
+
+// =========================================================
+// ANALYZE
+// =========================================================
+const chatMessages = document.getElementById('chatMessages');
+
+async function analyzeStroke() {
+  if (!currentFile) { showToast('Upload a file first', true); return; }
+  if (!apiKey) { showToast('Enter your API key first', true); return; }
+
+  document.getElementById('analyzeBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Analyzing…';
+  document.getElementById('analyzeBtn').classList.remove('ready');
+  setProgress(10, 'Starting…');
+  document.getElementById('analysisResult').style.display = 'block';
+  const resultEl = document.getElementById('resultContent');
+  resultEl.textContent = '';
+
+  try {
+    let images = [];
+    if (mediaType === 'video') {
+      const frames = await captureFrames(currentFile);
+      videoFrames = frames;
+      images = frames.map(f => ({ type:'image_url', image_url:{ url:f } }));
+      setProgress(75, 'Sending to AI…');
+    } else {
+      if (!imgBase64) imgBase64 = await toBase64(currentFile);
+      images = [{ type:'image_url', image_url:{ url:imgBase64 } }];
+      setProgress(50, 'Analyzing image…');
+    }
+
+    const prompts = {
+      strokes:'Analyze this swimming stroke. Identify the stroke type and give detailed feedback.',
+      starts:'Analyze this swimming start/dive. Assess body position, reaction, and entry.',
+      turns:'Analyze this turn. Assess approach, rotation, push-off, and breakout.',
+      finishes:'Analyze this finish. Assess wall touch, stroke count, and final push.',
+      underwater:'Analyze this underwater phase. Assess dolphin kick, streamline, and depth.',
+      kicks:'Analyze this kicking technique. Assess rhythm, depth, and power.'
+    };
+
+    let fullResult = '';
+    await callAI([
+      { role:'system', content: systemPrompt() },
+      { role:'user', content: [{ type:'text', text: prompts[currentCategory] }, ...images] }
+    ], 1200, chunk => {
+      fullResult += chunk;
+      resultEl.textContent = fullResult;
+    });
+
+    setProgress(100, 'Complete!');
+    document.getElementById('resultLabel').innerHTML =
+      `<i class="fas fa-check-circle"></i> ${currentCategory.charAt(0).toUpperCase()+currentCategory.slice(1)} Analysis`;
+    addAIMsg(chatMessages, `Analysis complete!\n\n${fullResult.substring(0,250)}…`);
+    showToast('Analysis complete!');
+    saveAnalysis(currentCategory, fullResult);
+
+  } catch(e) {
+    resultEl.textContent = 'Error: ' + e.message;
+    showToast(e.message, true);
+  } finally {
+    document.getElementById('analyzeBtn').innerHTML = '<i class="fas fa-brain"></i>&nbsp; Analyze with AI';
+    document.getElementById('analyzeBtn').classList.add('ready');
+    setTimeout(() => document.getElementById('progressWrap').classList.remove('show'), 2000);
+  }
+}
+
+// =========================================================
+// ANALYSIS CHAT
+// =========================================================
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim(); if (!msg) return;
+  if (!apiKey) { showToast('Enter API key first', true); return; }
+
+  const sendBtn = document.getElementById('chatSendBtn');
+  sendBtn.disabled = true;
+  addUserMsg(chatMessages, msg);
+  input.value = '';
+
+  let content = [];
+  if (kbLoaded) content.push({ type:'text', text:`[KB excerpt: ${kbText.substring(0,400)}]` });
+  if (mediaType === 'image' && imgBase64) {
+    content.push({ type:'text', text:`Category: ${currentCategory}. ${msg}` });
+    content.push({ type:'image_url', image_url:{ url:imgBase64 } });
+  } else if (videoFrames.length) {
+    content.push({ type:'text', text:`Category: ${currentCategory}. ${msg}` });
+    videoFrames.forEach(f => content.push({ type:'image_url', image_url:{ url:f } }));
+  } else {
+    content.push({ type:'text', text:msg });
+  }
+
+  chatHistory.push({ role:'user', content });
+
+  const bubble = addStreamingMsg(chatMessages);
+  try {
+    let full = '';
+    await callAI([
+      { role:'system', content: systemPrompt() },
+      ...chatHistory
+    ], 600, chunk => {
+      full += chunk;
+      bubble.textContent = full;
+      chatMessages.scrollTop = 99999;
+    });
+    chatHistory.push({ role:'assistant', content: full });
+  } catch(e) {
+    bubble.textContent = 'Error: ' + e.message;
+    chatHistory.pop();
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
+
+function clearChat() {
+  chatHistory = [];
+  chatMessages.innerHTML = '';
+  addAIMsg(chatMessages, '🗑️ Chat cleared. Ready for questions!');
+}
+
+// =========================================================
+// ROSTER
+// =========================================================
+const stdDB = {
+  SCY: {
+    '10u': {
+      M: {
+        '50 FR':  {AAAA:28.09,AAA:29.49,AA:30.89,A:32.29,BB:35.09},
+        '100 FR': {AAAA:60.69,AAA:63.79,AA:66.79,A:69.79,BB:78.89},
+        '200 FR': {AAAA:134.99,AAA:141.79,AA:148.59,A:155.39,BB:168.89},
+        '500 FR': {AAAA:374.99,AAA:393.79,AA:412.59,A:431.39,BB:468.89},
+        '100 BK': {AAAA:68.49,AAA:71.89,AA:75.29,A:78.69,BB:85.49},
+        '100 BR': {AAAA:79.99,AAA:83.99,AA:87.99,A:91.99,BB:99.99},
+        '100 FL': {AAAA:70.99,AAA:74.49,AA:77.99,A:81.49,BB:88.49},
+        '200 IM': {AAAA:148.99,AAA:156.39,AA:163.79,A:171.19,BB:185.99},
+      },
+      F: {
+        '50 FR':  {AAAA:29.99,AAA:31.49,AA:32.99,A:34.49,BB:37.49},
+        '100 FR': {AAAA:61.79,AAA:64.99,AA:68.29,A:71.49,BB:81.09},
+        '200 FR': {AAAA:137.99,AAA:144.89,AA:151.79,A:158.69,BB:172.49},
+        '500 FR': {AAAA:381.99,AAA:400.99,AA:419.99,A:438.99,BB:476.99},
+        '100 BK': {AAAA:70.99,AAA:74.49,AA:77.99,A:81.49,BB:88.49},
+        '100 BR': {AAAA:82.99,AAA:87.09,AA:91.19,A:95.29,BB:103.49},
+        '100 FL': {AAAA:73.49,AAA:77.09,AA:80.79,A:84.49,BB:91.79},
+        '200 IM': {AAAA:154.99,AAA:162.69,AA:170.39,A:178.09,BB:193.49},
+      }
+    },
+    '11-12': {
+      M: {
+        '50 FR':   {AAAA:24.29,AAA:25.59,AA:26.79,A:27.99,BB:30.39},
+        '100 FR':  {AAAA:53.59,AAA:56.19,AA:58.69,A:61.29,BB:66.39},
+        '200 FR':  {AAAA:116.49,AAA:122.29,AA:127.99,A:133.69,BB:145.09},
+        '500 FR':  {AAAA:322.49,AAA:338.69,AA:354.89,A:370.99,BB:403.39},
+        '1000 FR': {AAAA:664.29,AAA:697.49,AA:730.59,A:763.79,BB:830.09},
+        '1650 FR': {AAAA:1108.09,AAA:1163.49,AA:1218.79,A:1274.29,BB:1385.09},
+        '100 BK':  {AAAA:59.49,AAA:62.39,AA:65.29,A:68.19,BB:73.99},
+        '200 BK':  {AAAA:130.09,AAA:136.59,AA:142.99,A:149.39,BB:162.29},
+        '100 BR':  {AAAA:67.89,AAA:71.29,AA:74.59,A:77.99,BB:84.59},
+        '200 BR':  {AAAA:148.29,AAA:155.79,AA:163.09,A:170.49,BB:185.19},
+        '100 FL':  {AAAA:60.09,AAA:63.09,AA:66.09,A:68.99,BB:74.89},
+        '200 FL':  {AAAA:131.49,AAA:138.09,AA:144.59,A:151.09,BB:164.09},
+        '200 IM':  {AAAA:126.79,AAA:133.09,AA:139.39,A:145.59,BB:158.09},
+        '400 IM':  {AAAA:270.59,AAA:284.09,AA:297.59,A:310.99,BB:337.99},
+      },
+      F: {
+        '50 FR':   {AAAA:25.49,AAA:26.79,AA:28.09,A:29.29,BB:31.79},
+        '100 FR':  {AAAA:55.99,AAA:58.69,AA:61.39,A:63.99,BB:69.39},
+        '200 FR':  {AAAA:121.29,AAA:127.39,AA:133.39,A:139.49,BB:151.59},
+        '500 FR':  {AAAA:335.59,AAA:352.49,AA:369.29,A:386.19,BB:419.99},
+        '1000 FR': {AAAA:690.09,AAA:724.59,AA:758.99,A:793.49,BB:862.49},
+        '1650 FR': {AAAA:1150.19,AAA:1207.69,AA:1265.09,A:1322.69,BB:1437.59},
+        '100 BK':  {AAAA:62.29,AAA:65.39,AA:68.39,A:71.49,BB:77.59},
+        '200 BK':  {AAAA:136.29,AAA:143.09,AA:149.79,A:156.59,BB:169.99},
+        '100 BR':  {AAAA:71.49,AAA:74.99,AA:78.49,A:81.99,BB:88.99},
+        '200 BR':  {AAAA:156.09,AAA:163.89,AA:171.59,A:179.39,BB:194.89},
+        '100 FL':  {AAAA:62.99,AAA:66.09,AA:69.19,A:72.29,BB:78.39},
+        '200 FL':  {AAAA:137.89,AAA:144.79,AA:151.69,A:158.59,BB:172.29},
+        '200 IM':  {AAAA:133.09,AAA:139.69,AA:146.29,A:152.99,BB:166.09},
+        '400 IM':  {AAAA:283.89,AAA:298.09,AA:312.29,A:326.49,BB:354.89},
+      }
+    },
+    '13-14': {
+      M: {
+        '50 FR':   {AAAA:22.49,AAA:23.59,AA:24.69,A:25.79,BB:27.99},
+        '100 FR':  {AAAA:48.69,AAA:51.09,AA:53.39,A:55.69,BB:60.29},
+        '200 FR':  {AAAA:106.99,AAA:112.29,AA:117.49,A:122.69,BB:132.99},
+        '500 FR':  {AAAA:294.89,AAA:309.59,AA:324.29,A:338.99,BB:368.39},
+        '1000 FR': {AAAA:608.59,AAA:638.99,AA:669.29,A:699.59,BB:760.19},
+        '1650 FR': {AAAA:1016.49,AAA:1067.29,AA:1117.99,A:1168.89,BB:1270.49},
+        '100 BK':  {AAAA:54.59,AAA:57.29,AA:59.99,A:62.69,BB:67.99},
+        '200 BK':  {AAAA:119.39,AAA:125.29,AA:131.19,A:136.99,BB:148.79},
+        '100 BR':  {AAAA:60.99,AAA:64.09,AA:67.09,A:70.09,BB:76.09},
+        '200 BR':  {AAAA:132.49,AAA:139.19,AA:145.89,A:152.49,BB:165.79},
+        '100 FL':  {AAAA:52.99,AAA:55.69,AA:58.29,A:60.89,BB:65.99},
+        '200 FL':  {AAAA:116.69,AAA:122.49,AA:128.19,A:133.79,BB:145.19},
+        '200 IM':  {AAAA:115.79,AAA:121.49,AA:127.29,A:132.99,BB:144.39},
+        '400 IM':  {AAAA:246.69,AAA:259.09,AA:271.49,A:283.89,BB:308.59},
+      },
+      F: {
+        '50 FR':   {AAAA:24.29,AAA:25.49,AA:26.69,A:27.89,BB:30.19},
+        '100 FR':  {AAAA:53.29,AAA:55.79,AA:58.29,A:60.89,BB:65.89},
+        '200 FR':  {AAAA:116.49,AAA:121.99,AA:127.39,A:132.89,BB:144.19},
+        '500 FR':  {AAAA:316.49,AAA:332.09,AA:347.59,A:362.99,BB:393.99},
+        '1000 FR': {AAAA:651.89,AAA:684.29,AA:716.59,A:749.09,BB:813.69},
+        '1650 FR': {AAAA:1086.19,AAA:1140.49,AA:1194.69,A:1249.09,BB:1357.59},
+        '100 BK':  {AAAA:59.09,AAA:61.99,AA:64.79,A:67.69,BB:73.29},
+        '200 BK':  {AAAA:128.09,AAA:134.39,AA:140.69,A:146.99,BB:159.59},
+        '100 BR':  {AAAA:66.89,AAA:70.19,AA:73.39,A:76.69,BB:83.19},
+        '200 BR':  {AAAA:145.09,AAA:152.29,AA:159.49,A:166.59,BB:180.99},
+        '100 FL':  {AAAA:58.49,AAA:61.39,AA:64.19,A:66.99,BB:72.69},
+        '200 FL':  {AAAA:127.39,AAA:133.79,AA:140.19,A:146.39,BB:158.99},
+        '200 IM':  {AAAA:125.09,AAA:131.39,AA:137.59,A:143.89,BB:156.49},
+        '400 IM':  {AAAA:267.29,AAA:280.69,AA:293.99,A:307.39,BB:333.99},
+      }
+    },
+    '15-16': {
+      M: {
+        '50 FR':   {AAAA:21.29,AAA:22.39,AA:23.39,A:24.49,BB:26.49},
+        '100 FR':  {AAAA:46.49,AAA:48.79,AA:50.99,A:53.19,BB:57.59},
+        '200 FR':  {AAAA:101.79,AAA:106.79,AA:111.79,A:116.89,BB:126.79},
+        '500 FR':  {AAAA:278.89,AAA:292.69,AA:306.49,A:320.29,BB:347.89},
+        '1000 FR': {AAAA:574.79,AAA:603.29,AA:631.89,A:660.39,BB:717.49},
+        '1650 FR': {AAAA:960.09,AAA:1008.09,AA:1056.09,A:1104.09,BB:1199.99},
+        '100 BK':  {AAAA:52.39,AAA:54.99,AA:57.49,A:59.99,BB:65.09},
+        '200 BK':  {AAAA:113.79,AAA:119.49,AA:125.09,A:130.69,BB:141.99},
+        '100 BR':  {AAAA:57.99,AAA:60.89,AA:63.69,A:66.49,BB:72.09},
+        '200 BR':  {AAAA:125.49,AAA:131.69,AA:137.89,A:144.09,BB:156.49},
+        '100 FL':  {AAAA:50.49,AAA:52.99,AA:55.49,A:57.99,BB:62.89},
+        '200 FL':  {AAAA:110.79,AAA:116.29,AA:121.79,A:127.29,BB:138.19},
+        '200 IM':  {AAAA:110.49,AAA:115.99,AA:121.39,A:126.79,BB:137.69},
+        '400 IM':  {AAAA:235.49,AAA:247.19,AA:258.89,A:270.59,BB:293.99},
+      },
+      F: {
+        '50 FR':   {AAAA:23.49,AAA:24.59,AA:25.69,A:26.89,BB:29.19},
+        '100 FR':  {AAAA:51.59,AAA:53.99,AA:56.49,A:58.89,BB:63.79},
+        '200 FR':  {AAAA:112.69,AAA:118.19,AA:123.59,A:129.09,BB:139.99},
+        '500 FR':  {AAAA:307.09,AAA:322.49,AA:337.89,A:353.19,BB:383.99},
+        '1000 FR': {AAAA:632.19,AAA:663.69,AA:695.09,A:726.59,BB:789.59},
+        '1650 FR': {AAAA:1054.49,AAA:1107.09,AA:1159.69,A:1212.19,BB:1317.19},
+        '100 BK':  {AAAA:56.79,AAA:59.59,AA:62.29,A:65.09,BB:70.59},
+        '200 BK':  {AAAA:123.39,AAA:129.49,AA:135.49,A:141.59,BB:153.69},
+        '100 BR':  {AAAA:65.09,AAA:68.29,AA:71.39,A:74.59,BB:80.89},
+        '200 BR':  {AAAA:141.29,AAA:148.29,AA:155.29,A:162.29,BB:176.29},
+        '100 FL':  {AAAA:56.49,AAA:59.29,AA:61.99,A:64.69,BB:70.19},
+        '200 FL':  {AAAA:122.89,AAA:128.99,AA:134.99,A:141.09,BB:153.19},
+        '200 IM':  {AAAA:120.49,AAA:126.39,AA:132.29,A:138.29,BB:149.89},
+        '400 IM':  {AAAA:257.09,AAA:269.69,AA:282.29,A:294.89,BB:319.99},
+      }
+    },
+    '17-18': {
+      M: {
+        '50 FR':   {AAAA:21.09,AAA:22.19,AA:23.19,A:24.19,BB:26.29},
+        '100 FR':  {AAAA:45.29,AAA:47.39,AA:49.59,A:51.69,BB:55.99},
+        '200 FR':  {AAAA:99.39,AAA:104.29,AA:109.09,A:113.99,BB:123.59},
+        '500 FR':  {AAAA:273.99,AAA:287.39,AA:300.79,A:314.39,BB:340.89},
+        '1000 FR': {AAAA:564.89,AAA:592.19,AA:619.39,A:647.09,BB:701.89},
+        '1650 FR': {AAAA:943.19,AAA:989.09,AA:1034.89,A:1080.89,BB:1172.39},
+        '100 BK':  {AAAA:50.89,AAA:53.39,AA:55.89,A:58.29,BB:63.29},
+        '200 BK':  {AAAA:110.99,AAA:116.39,AA:121.69,A:127.19,BB:137.89},
+        '100 BR':  {AAAA:56.79,AAA:59.49,AA:62.29,A:64.99,BB:70.49},
+        '200 BR':  {AAAA:122.49,AAA:128.49,AA:134.49,A:140.49,BB:152.49},
+        '100 FL':  {AAAA:49.39,AAA:51.89,AA:54.29,A:56.69,BB:61.49},
+        '200 FL':  {AAAA:108.39,AAA:113.79,AA:119.09,A:124.39,BB:135.09},
+        '200 IM':  {AAAA:108.09,AAA:113.39,AA:118.69,A:123.89,BB:134.49},
+        '400 IM':  {AAAA:229.29,AAA:240.49,AA:251.89,A:263.09,BB:285.59},
+      },
+      F: {
+        '50 FR':   {AAAA:23.19,AAA:24.39,AA:25.49,A:26.59,BB:28.89},
+        '100 FR':  {AAAA:51.09,AAA:53.49,AA:55.89,A:58.39,BB:63.19},
+        '200 FR':  {AAAA:111.59,AAA:116.99,AA:122.39,A:127.89,BB:138.79},
+        '500 FR':  {AAAA:305.19,AAA:320.39,AA:335.49,A:350.89,BB:380.89},
+        '1000 FR': {AAAA:627.09,AAA:658.29,AA:689.39,A:720.89,BB:782.59},
+        '1650 FR': {AAAA:1046.19,AAA:1098.69,AA:1150.99,A:1203.89,BB:1308.09},
+        '100 BK':  {AAAA:55.79,AAA:58.49,AA:61.19,A:63.89,BB:69.29},
+        '200 BK':  {AAAA:121.09,AAA:126.99,AA:132.89,A:138.89,BB:150.79},
+        '100 BR':  {AAAA:63.89,AAA:66.99,AA:70.09,A:73.19,BB:79.39},
+        '200 BR':  {AAAA:138.79,AAA:145.59,AA:152.49,A:159.29,BB:172.89},
+        '100 FL':  {AAAA:55.49,AAA:58.09,AA:60.79,A:63.49,BB:68.79},
+        '200 FL':  {AAAA:120.79,AAA:126.79,AA:132.89,A:138.79,BB:150.79},
+        '200 IM':  {AAAA:118.49,AAA:124.39,AA:130.29,A:136.29,BB:147.89},
+        '400 IM':  {AAAA:252.89,AAA:265.29,AA:277.79,A:290.19,BB:315.09},
+      }
+    }
+  },
+  LCM: {
+    '11-12': {
+      M: {
+        '100 FR': {AAAA:61.59,AAA:64.49,AA:67.49,A:70.39,BB:76.19},
+        '200 FR': {AAAA:134.39,AAA:141.09,AA:147.69,A:154.39,BB:167.69},
+        '100 BK': {AAAA:68.29,AAA:71.69,AA:75.09,A:78.39,BB:85.09},
+        '100 BR': {AAAA:77.49,AAA:81.29,AA:85.09,A:88.89,BB:96.49},
+        '100 FL': {AAAA:69.09,AAA:72.59,AA:75.99,A:79.39,BB:86.19},
+        '200 IM': {AAAA:143.59,AAA:150.79,AA:157.99,A:165.19,BB:179.59},
+      },
+      F: {
+        '100 FR': {AAAA:64.19,AAA:67.19,AA:70.29,A:73.39,BB:79.49},
+        '200 FR': {AAAA:140.39,AAA:147.29,AA:154.29,A:161.19,BB:175.09},
+        '100 BK': {AAAA:71.79,AAA:75.39,AA:78.89,A:82.49,BB:89.49},
+        '100 BR': {AAAA:81.09,AAA:85.09,AA:89.09,A:93.09,BB:101.09},
+        '100 FL': {AAAA:72.39,AAA:75.99,AA:79.59,A:83.19,BB:90.39},
+        '200 IM': {AAAA:150.39,AAA:157.89,AA:165.39,A:172.89,BB:187.89},
+      }
+    },
+    '13-14': {
+      M: {
+        '50 FR':  {AAAA:24.99,AAA:26.19,AA:27.39,A:28.59,BB:30.99},
+        '100 FR': {AAAA:53.39,AAA:55.99,AA:58.59,A:61.19,BB:66.39},
+        '200 FR': {AAAA:116.09,AAA:121.89,AA:127.69,A:133.39,BB:144.89},
+        '100 BK': {AAAA:60.09,AAA:63.09,AA:65.99,A:68.89,BB:74.79},
+        '200 BK': {AAAA:131.09,AAA:137.69,AA:144.09,A:150.59,BB:163.49},
+        '100 BR': {AAAA:69.19,AAA:72.59,AA:75.99,A:79.39,BB:86.19},
+        '200 BR': {AAAA:150.09,AAA:157.59,AA:164.99,A:172.49,BB:187.29},
+        '100 FL': {AAAA:58.29,AAA:61.19,AA:64.09,A:66.89,BB:72.59},
+        '200 FL': {AAAA:127.59,AAA:133.99,AA:140.29,A:146.69,BB:159.39},
+        '200 IM': {AAAA:126.59,AAA:132.79,AA:138.99,A:145.29,BB:157.69},
+        '400 IM': {AAAA:269.19,AAA:282.59,AA:295.99,A:309.49,BB:336.39},
+      },
+      F: {
+        '50 FR':  {AAAA:27.09,AAA:28.39,AA:29.69,A:30.99,BB:33.59},
+        '100 FR': {AAAA:58.89,AAA:61.69,AA:64.59,A:67.39,BB:73.09},
+        '200 FR': {AAAA:127.79,AAA:134.09,AA:140.39,A:146.59,BB:159.19},
+        '100 BK': {AAAA:65.49,AAA:68.69,AA:71.89,A:74.99,BB:81.39},
+        '200 BK': {AAAA:142.29,AAA:149.39,AA:156.49,A:163.59,BB:177.79},
+        '100 BR': {AAAA:75.09,AAA:78.69,AA:82.39,A:85.99,BB:93.29},
+        '200 BR': {AAAA:163.59,AAA:171.79,AA:179.99,A:188.09,BB:204.39},
+        '100 FL': {AAAA:64.39,AAA:67.49,AA:70.69,A:73.79,BB:80.09},
+        '200 FL': {AAAA:140.09,AAA:147.09,AA:154.09,A:161.09,BB:175.09},
+        '200 IM': {AAAA:138.59,AAA:145.39,AA:152.09,A:158.89,BB:172.49},
+        '400 IM': {AAAA:295.39,AAA:310.09,AA:324.79,A:339.49,BB:368.89},
+      }
+    },
+    '15-16': {
+      M: {
+        '50 FR':  {AAAA:23.49,AAA:24.69,AA:25.79,A:26.99,BB:29.29},
+        '100 FR': {AAAA:51.09,AAA:53.59,AA:56.09,A:58.49,BB:63.49},
+        '200 FR': {AAAA:111.29,AAA:116.79,AA:122.29,A:127.79,BB:138.69},
+        '100 BK': {AAAA:57.59,AAA:60.49,AA:63.29,A:66.09,BB:71.79},
+        '200 BK': {AAAA:125.29,AAA:131.59,AA:137.79,A:144.09,BB:156.59},
+        '100 BR': {AAAA:64.89,AAA:68.09,AA:71.29,A:74.39,BB:80.79},
+        '200 BR': {AAAA:140.79,AAA:147.79,AA:154.89,A:161.79,BB:175.79},
+        '100 FL': {AAAA:55.99,AAA:58.79,AA:61.49,A:64.29,BB:69.69},
+        '200 FL': {AAAA:121.69,AAA:127.79,AA:133.79,A:139.89,BB:151.99},
+        '200 IM': {AAAA:120.69,AAA:126.69,AA:132.69,A:138.79,BB:150.69},
+        '400 IM': {AAAA:257.59,AAA:270.39,AA:283.19,A:295.99,BB:321.59},
+      },
+      F: {
+        '50 FR':  {AAAA:25.99,AAA:27.29,AA:28.59,A:29.79,BB:32.39},
+        '100 FR': {AAAA:56.99,AAA:59.79,AA:62.59,A:65.29,BB:70.89},
+        '200 FR': {AAAA:123.49,AAA:129.59,AA:135.69,A:141.79,BB:153.99},
+        '100 BK': {AAAA:63.39,AAA:66.49,AA:69.59,A:72.59,BB:78.79},
+        '200 BK': {AAAA:137.89,AAA:144.79,AA:151.69,A:158.49,BB:172.19},
+        '100 BR': {AAAA:73.09,AAA:76.59,AA:80.09,A:83.59,BB:90.69},
+        '200 BR': {AAAA:158.79,AAA:166.69,AA:174.59,A:182.49,BB:198.29},
+        '100 FL': {AAAA:61.89,AAA:64.89,AA:67.99,A:70.99,BB:77.09},
+        '200 FL': {AAAA:134.99,AAA:141.79,AA:148.59,A:155.39,BB:168.89},
+        '200 IM': {AAAA:132.49,AAA:138.89,AA:145.39,A:151.79,BB:164.79},
+        '400 IM': {AAAA:282.59,AAA:296.59,AA:310.49,A:324.49,BB:352.49},
+      }
+    },
+    '17-18': {
+      M: {
+        '50 FR':  {AAAA:22.99,AAA:24.19,AA:25.29,A:26.39,BB:28.69},
+        '100 FR': {AAAA:49.79,AAA:52.39,AA:54.89,A:57.29,BB:62.29},
+        '200 FR': {AAAA:108.89,AAA:114.19,AA:119.49,A:124.89,BB:135.49},
+        '100 BK': {AAAA:55.59,AAA:58.39,AA:61.09,A:63.79,BB:69.19},
+        '200 BK': {AAAA:121.19,AAA:127.19,AA:133.09,A:139.09,BB:150.99},
+        '100 BR': {AAAA:62.29,AAA:65.49,AA:68.59,A:71.69,BB:77.89},
+        '200 BR': {AAAA:134.89,AAA:141.59,AA:148.29,A:154.99,BB:168.39},
+        '100 FL': {AAAA:53.89,AAA:56.69,AA:59.39,A:62.09,BB:67.39},
+        '200 FL': {AAAA:117.69,AAA:123.59,AA:129.49,A:135.39,BB:147.19},
+        '200 IM': {AAAA:117.59,AAA:123.49,AA:129.39,A:135.29,BB:146.99},
+        '400 IM': {AAAA:250.49,AAA:262.99,AA:275.39,A:287.99,BB:312.89},
+      },
+      F: {
+        '50 FR':  {AAAA:25.49,AAA:26.69,AA:27.99,A:29.19,BB:31.69},
+        '100 FR': {AAAA:55.89,AAA:58.59,AA:61.29,A:63.99,BB:69.49},
+        '200 FR': {AAAA:121.09,AAA:127.09,AA:133.09,A:139.19,BB:151.19},
+        '100 BK': {AAAA:61.79,AAA:64.89,AA:67.89,A:70.99,BB:77.09},
+        '200 BK': {AAAA:134.59,AAA:141.29,AA:147.99,A:154.69,BB:168.09},
+        '100 BR': {AAAA:71.29,AAA:74.79,AA:78.29,A:81.79,BB:88.79},
+        '200 BR': {AAAA:154.09,AAA:161.79,AA:169.49,A:177.19,BB:192.59},
+        '100 FL': {AAAA:60.39,AAA:63.39,AA:66.29,A:69.29,BB:75.19},
+        '200 FL': {AAAA:131.79,AAA:138.39,AA:144.99,A:151.59,BB:164.79},
+        '200 IM': {AAAA:129.39,AAA:135.79,AA:142.09,A:148.49,BB:161.19},
+        '400 IM': {AAAA:276.09,AAA:289.79,AA:303.49,A:317.19,BB:344.49},
+      }
+    }
+  }
+};
+
+function getStd(course, age, gender, event, sec) {
+  const db = stdDB[course]?.[age]?.[gender]?.[event];
+  if (!db) return '—';
+  for (const lvl of ['AAAA','AAA','AA','A','BB']) {
+    if (sec <= db[lvl]) return lvl;
+  }
+  return 'BB';
+}
+
+// =========================================================
+// TIME FORMAT HELPERS
+// =========================================================
+function parseTime(str) {
+  str = String(str).trim();
+  if (str.includes(':')) {
+    const [min, sec] = str.split(':');
+    const val = parseFloat(min) * 60 + parseFloat(sec);
+    return isNaN(val) ? NaN : val;
+  }
+  return parseFloat(str);
+}
+
+function formatTime(sec) {
+  sec = parseFloat(sec);
+  if (isNaN(sec)) return '—';
+  if (sec >= 60) {
+    const m = Math.floor(sec / 60);
+    const s = (sec % 60).toFixed(2).padStart(5, '0');
+    return `${m}:${s}`;
+  }
+  return sec.toFixed(2);
+}
+
+// =========================================================
+// ROSTER — ADD / SORT / RENDER / DELETE
+// =========================================================
+function addSwimmer() {
+  const name = document.getElementById('rName').value.trim();
+  const rawTime = document.getElementById('rTime').value;
+  const time = parseTime(rawTime);
+  if (!name || isNaN(time) || time <= 0) { showToast('Enter a valid name and time', true); return; }
+  const gender = document.getElementById('rGender').value;
+  const age = document.getElementById('rAge').value;
+  const stroke = document.getElementById('rStroke').value;
+  const dist = document.getElementById('rDist').value;
+  const course = document.getElementById('rCourse').value;
+  const event = dist + ' ' + stroke;
+  const std = getStd(course, age, gender, event, time);
+  const existing = swimmers.find(s =>
+    s.name.toLowerCase() === name.toLowerCase() &&
+    s.dist === dist && s.stroke === stroke && s.course === course
+  );
+  if (existing) {
+    if (time >= existing.timeSec) {
+      showToast('New time is not faster — keeping existing time', true);
+      return;
+    }
+    existing.timeSec = time;
+    existing.std = std;
+    existing.gender = gender;
+    existing.age = age;
+    saveSwimmers();
+    renderRoster();
+    document.getElementById('rName').value = '';
+    document.getElementById('rTime').value = '';
+    addAIMsg(document.getElementById('rosterChatMessages'),
+      `🔄 Updated ${name} — ${dist} ${stroke} to ${formatTime(time)} (${std}).`);
+    return;
+  }
+  swimmers.push({ id: Date.now(), name, gender, age, stroke, dist, course, timeSec: time, std });
+  saveSwimmers();
+  renderRoster();
+  document.getElementById('rName').value = '';
+  document.getElementById('rTime').value = '';
+  addAIMsg(document.getElementById('rosterChatMessages'),
+    `✅ Added ${name} — ${dist} ${stroke} in ${formatTime(time)} (${std}). Roster: ${swimmers.length} swimmer${swimmers.length>1?'s':''}.`);
+}
+
+function sortRoster(col) {
+  if (sortState.col === col) {
+    sortState.dir *= -1;
+  } else {
+    sortState.col = col;
+    sortState.dir = 1;
+  }
+  renderRoster();
+}
+
+function renderRoster() {
+  const tbody = document.getElementById('rosterBody');
+  const count = document.getElementById('rosterCount');
+  const rcCount = document.getElementById('rosterChatCount');
+  const footer = document.getElementById('rosterFooter');
+
+  ['name','event','time','std'].forEach(col => {
+    const el = document.getElementById('sort-' + col);
+    if (!el) return;
+    el.textContent = sortState.col === col ? (sortState.dir === 1 ? '▲' : '▼') : '';
+  });
+
+  if (!swimmers.length) {
+    count.textContent = '0 swimmers';
+    rcCount.textContent = '0 swimmers';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No swimmers yet — add one above</td></tr>';
+    footer.innerHTML = '<i class="fas fa-chart-line"></i> Add swimmers to build your roster';
+    return;
+  }
+
+  // Group entries by swimmer name (case-insensitive), preserving insertion order
+  const groupMap = new Map();
+  for (const s of swimmers) {
+    const key = s.name.toLowerCase();
+    if (!groupMap.has(key)) groupMap.set(key, { displayName: s.name, gender: s.gender, age: s.age, entries: [] });
+    groupMap.get(key).entries.push(s);
+  }
+  let groups = Array.from(groupMap.values());
+
+  const stdOrder = { AAAA: 0, AAA: 1, AA: 2, A: 3, BB: 4, '—': 5 };
+
+  // Sort groups by the selected column
+  if (sortState.col) {
+    groups.sort((a, b) => {
+      let av, bv;
+      if (sortState.col === 'name') {
+        av = a.displayName.toLowerCase(); bv = b.displayName.toLowerCase();
+      } else if (sortState.col === 'time') {
+        av = Math.min(...a.entries.map(e => e.timeSec));
+        bv = Math.min(...b.entries.map(e => e.timeSec));
+      } else if (sortState.col === 'event') {
+        av = a.entries[0].dist + ' ' + a.entries[0].stroke;
+        bv = b.entries[0].dist + ' ' + b.entries[0].stroke;
+      } else if (sortState.col === 'std') {
+        av = Math.min(...a.entries.map(e => stdOrder[e.std] ?? 5));
+        bv = Math.min(...b.entries.map(e => stdOrder[e.std] ?? 5));
+      }
+      if (av < bv) return -1 * sortState.dir;
+      if (av > bv) return  1 * sortState.dir;
+      return 0;
+    });
+    // Also sort entries within each group
+    if (sortState.col !== 'name') {
+      for (const g of groups) {
+        g.entries.sort((a, b) => {
+          let av, bv;
+          if (sortState.col === 'time')  { av = a.timeSec; bv = b.timeSec; }
+          else if (sortState.col === 'event') { av = a.dist+' '+a.stroke; bv = b.dist+' '+b.stroke; }
+          else if (sortState.col === 'std')  { av = stdOrder[a.std]??5; bv = stdOrder[b.std]??5; }
+          if (av < bv) return -1 * sortState.dir;
+          if (av > bv) return  1 * sortState.dir;
+          return 0;
+        });
+      }
+    }
+  }
+
+  // Render with rowspan on the name cell so each swimmer appears only once
+  const rows = [];
+  for (const g of groups) {
+    g.entries.forEach((s, idx) => {
+      const stdClass = s.std === '—' ? 'std-\\-' : 'std-' + s.std.toLowerCase();
+      if (idx === 0) {
+        rows.push(`
+          <tr class="group-first">
+            <td rowspan="${g.entries.length}" class="swimmer-name-cell">
+              <div class="swimmer-cell">
+                <span class="avatar">${g.displayName[0].toUpperCase()}</span>
+                ${g.displayName}<span style="color:var(--text-3);font-size:.78rem;margin-left:4px;">(${s.gender}, ${s.age})</span>
+              </div>
+            </td>
+            <td>${s.dist} ${s.stroke}</td>
+            <td><span class="time-chip">${formatTime(s.timeSec)}</span></td>
+            <td><span class="std-badge ${stdClass}">${s.std}</span></td>
+            <td>${s.course}</td>
+            <td><button class="del-btn" onclick="deleteSwimmer(${s.id})"><i class="fas fa-trash-alt"></i></button></td>
+          </tr>`);
+      } else {
+        rows.push(`
+          <tr class="group-sub">
+            <td class="event-sub">${s.dist} ${s.stroke}</td>
+            <td><span class="time-chip">${formatTime(s.timeSec)}</span></td>
+            <td><span class="std-badge ${stdClass}">${s.std}</span></td>
+            <td>${s.course}</td>
+            <td><button class="del-btn" onclick="deleteSwimmer(${s.id})"><i class="fas fa-trash-alt"></i></button></td>
+          </tr>`);
+      }
+    });
+  }
+  tbody.innerHTML = rows.join('');
+
+  const uniqueCount = groups.length;
+  const totalEntries = swimmers.length;
+  count.textContent = `${uniqueCount} swimmer${uniqueCount !== 1 ? 's' : ''}`;
+  rcCount.textContent = count.textContent;
+
+  const times = swimmers.map(s => s.timeSec).filter(t => !isNaN(t));
+  footer.innerHTML = `<i class="fas fa-chart-line"></i> ${uniqueCount} swimmer${uniqueCount !== 1 ? 's' : ''} · ${totalEntries} entries · best: ${formatTime(Math.min(...times))} · avg: ${formatTime(times.reduce((a,b) => a+b, 0) / times.length)}`;
+}
+
+function deleteSwimmer(id) {
+  swimmers = swimmers.filter(s => s.id !== id);
+  saveSwimmers();
+  renderRoster();
+}
+
+function saveSwimmers() {}
+
+// =========================================================
+// CSV EXPORT
+// =========================================================
+function exportCSV() {
+  if (!swimmers.length) { showToast('No swimmers to export', true); return; }
+  const headers = ['Name','Gender','Age Group','Stroke','Distance','Course','Time','Standard'];
+  const rows = swimmers.map(s => [
+    s.name, s.gender, s.age, s.stroke, s.dist, s.course, formatTime(s.timeSec), s.std
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'roster.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Roster exported');
+}
+
+// =========================================================
+// REGION DISPLAY
+// =========================================================
+const regionNotes = {
+  National:              'Standards: 2024–2028 USA Swimming Motivational (National)',
+  // Eastern Zone
+  Adirondack:            'Adirondack Swimming (AD) · Eastern Zone — verify cuts at adirondackswimming.org',
+  'Allegheny Mountain':  'Allegheny Mountain Swimming (AM) · Eastern Zone — verify cuts with your LSC',
+  Connecticut:           'Connecticut Swimming (CT) · Eastern Zone — verify cuts at ctswimming.org',
+  'Long Island':         'Long Island Swimming (LI) · Eastern Zone — verify cuts at liswimming.org',
+  Maryland:              'Maryland Swimming (MD) · Eastern Zone — verify cuts at mdswim.org',
+  Metropolitan:          'Metropolitan Swimming (MR) · Eastern Zone — verify cuts at metroswimming.org',
+  'New England':         'New England Swimming (NE) · Eastern Zone — MA, ME, NH, RI, VT — neswim.com',
+  'New Jersey':          'New Jersey Swimming (NJ) · Eastern Zone — verify cuts at njswimming.org',
+  Niagara:               'Niagara Swimming (NI) · Eastern Zone — verify cuts at niagaraswimming.org',
+  'Potomac Valley':      'Potomac Valley Swimming (PV) · Eastern Zone — verify cuts at pvswim.org',
+  'Puerto Rico':         'Puerto Rico Swimming (PR) · Eastern Zone — verify cuts with your LSC',
+  Virginia:              'Virginia Swimming (VA) · Eastern Zone — verify cuts at virginiaswimming.org',
+  // Southern Zone
+  Border:                'Border Swimming (BD) · Southern Zone — El Paso / S. New Mexico — verify with your LSC',
+  Florida:               'Florida Swimming (FL) · Southern Zone — verify cuts at swimflorida.com',
+  'Florida Gold Coast':  'Florida Gold Coast (FG) · Southern Zone — verify cuts at fgcswimming.com',
+  Georgia:               'Georgia Swimming (GA) · Southern Zone — verify cuts at gaswimming.com',
+  Gulf:                  'Gulf Swimming (GU) · Southern Zone — MS & LA Gulf Coast — verify with your LSC',
+  Kentucky:              'Kentucky Swimming (KY) · Southern Zone — verify cuts at kyswim.org',
+  'North Carolina':      'North Carolina Swimming (NC) · Southern Zone — verify cuts at ncswimming.org',
+  'North Texas':         'North Texas Swimming (NT) · Southern Zone — verify cuts at northtexasswimming.org',
+  'South Carolina':      'South Carolina Swimming (SC) · Southern Zone — verify cuts at scswimming.org',
+  'South Texas':         'South Texas Swimming (ST) · Southern Zone — verify cuts with your LSC',
+  Southeastern:          'Southeastern Swimming (SE) · Southern Zone — AL & TN — verify with your LSC',
+  Tennessee:             'Tennessee Swimming (TN) · Southern Zone — verify cuts at tnswimming.org',
+  'Virgin Islands':      'Virgin Islands Swimming (VI) · Southern Zone — verify cuts with your LSC',
+  'West Texas':          'West Texas Swimming (WT) · Southern Zone — verify cuts with your LSC',
+  'West Virginia':       'West Virginia Swimming (WV) · Southern Zone — verify cuts at wvaquatics.org',
+  // Central Zone
+  Arkansas:              'Arkansas Swimming (AR) · Central Zone — verify cuts at arkswimming.org',
+  Illinois:              'Illinois Swimming (IL) · Central Zone — verify cuts at ilswimming.com',
+  Indiana:               'Indiana Swimming (IN) · Central Zone — verify cuts at indianaswimming.org',
+  Iowa:                  'Iowa Swimming (IA) · Central Zone — verify cuts with your LSC',
+  'Lake Erie':           'Lake Erie Swimming (LE) · Central Zone — verify cuts with your LSC',
+  Michigan:              'Michigan Swimming (MI) · Central Zone — verify cuts at miswimming.org',
+  Midwestern:            'Midwestern Swimming (MW) · Central Zone — KS & NE — verify with your LSC',
+  Minnesota:             'Minnesota Swimming (MN) · Central Zone — verify cuts at mnswimming.org',
+  'Missouri Valley':     'Missouri Valley Swimming (MV) · Central Zone — MO — verify with your LSC',
+  'North Dakota':        'North Dakota Swimming (ND) · Central Zone — verify cuts with your LSC',
+  Ohio:                  'Ohio Swimming (OH) · Central Zone — verify cuts at ohioswimming.org',
+  Oklahoma:              'Oklahoma Swimming (OK) · Central Zone — verify cuts at okswimming.org',
+  Ozark:                 'Ozark Swimming (OZ) · Central Zone — AR/MO — verify with your LSC',
+  'South Dakota':        'South Dakota Swimming (SD) · Central Zone — verify cuts with your LSC',
+  Wisconsin:             'Wisconsin Swimming (WI) · Central Zone — verify cuts at wiswimming.org',
+  // Western Zone
+  Alaska:                'Alaska Swimming (AK) · Western Zone — verify cuts at alaskaswimming.org',
+  Arizona:               'Arizona Swimming (AZ) · Western Zone — verify cuts at azswimming.org',
+  'Central California':  'Central California Swimming (CC) · Western Zone — verify cuts with your LSC',
+  Colorado:              'Colorado Swimming (CO) · Western Zone — verify cuts at coloradoswimming.org',
+  Hawaii:                'Hawaii Swimming (HI) · Western Zone — verify cuts with your LSC',
+  'Inland Empire':       'Inland Empire Swimming (IE) · Western Zone — Inland SoCal — verify with your LSC',
+  Montana:               'Montana Swimming (MT) · Western Zone — verify cuts with your LSC',
+  'New Mexico':          'New Mexico Swimming (NM) · Western Zone — verify cuts with your LSC',
+  Pacific:               'Pacific Swimming (PC) · Western Zone — Northern CA — verify at pacswim.org',
+  'Pacific Northwest':   'Pacific Northwest Swimming (PN) · Western Zone — OR — verify with your LSC',
+  'San Diego-Imperial':  'San Diego-Imperial Swimming (SI) · Western Zone — verify at sdiswim.org',
+  'Sierra Nevada':       'Sierra Nevada Swimming (SN) · Western Zone — NV & E. CA — verify with your LSC',
+  'Snake River':         'Snake River Swimming (SR) · Western Zone — ID — verify with your LSC',
+  'Southern California': 'Southern California Swimming (SO) · Western Zone — verify at socalswimming.org',
+  Utah:                  'Utah Swimming (UT) · Western Zone — verify cuts at utahswimming.org',
+  Washington:            'Washington Swimming (WA) · Western Zone — verify cuts at waswimming.org',
+  Wyoming:               'Wyoming Swimming (WY) · Western Zone — verify cuts with your LSC',
+};
+
+function updateRegionDisplay() {
+  const region = document.getElementById('regionSelect').value;
+  document.getElementById('regionNote').textContent = regionNotes[region] || `${region}: verify with your LSC`;
+}
+
+// =========================================================
+// ROSTER CHAT
+// =========================================================
+async function sendRosterChat() {
+  const input = document.getElementById('rosterChatInput');
+  const msg = input.value.trim(); if (!msg) return;
+  if (!apiKey) { showToast('Enter API key first', true); return; }
+
+  const sendBtn = document.getElementById('rosterSendBtn');
+  sendBtn.disabled = true;
+  const msgs = document.getElementById('rosterChatMessages');
+  addUserMsg(msgs, msg);
+  input.value = '';
+
+  const region = document.getElementById('regionSelect').value;
+  const roster = swimmers.length
+    ? swimmers.map((s,i) => `${i+1}. ${s.name} (${s.gender}, ${s.age}): ${s.dist} ${s.stroke} — ${formatTime(s.timeSec)} ${s.course} [${s.std}]`).join('\n')
+    : 'No swimmers added yet.';
+  const sysContent = `You are a helpful swimming assistant. Region: ${region}.\n\nRoster:\n${roster}\n\nOnly answer questions about US swimming.`;
+
+  rosterChatHistory.push({ role:'user', content: msg });
+
+  const bubble = addStreamingMsg(msgs);
+  try {
+    let full = '';
+    await callAI([
+      { role:'system', content: sysContent },
+      ...rosterChatHistory
+    ], 500, chunk => {
+      full += chunk;
+      bubble.textContent = full;
+      msgs.scrollTop = 99999;
+    });
+    rosterChatHistory.push({ role:'assistant', content: full });
+  } catch(e) {
+    bubble.textContent = 'Error: ' + e.message;
+    rosterChatHistory.pop();
+  } finally {
+    sendBtn.disabled = false;
+  }
+}
+
+// =========================================================
+// ANALYSIS HISTORY
+// =========================================================
+function saveAnalysis(category, result) {
+  analysisHistory.unshift({ category, result, timestamp: new Date().toISOString() });
+  if (analysisHistory.length > 10) analysisHistory.pop();
+  localStorage.setItem('sc_analyses', JSON.stringify(analysisHistory));
+  renderAnalysisHistory();
+}
+
+function renderAnalysisHistory() {
+  const panel = document.getElementById('historyPanel');
+  const list = document.getElementById('historyList');
+  if (!analysisHistory.length) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  list.innerHTML = analysisHistory.slice(0, 5).map((a, i) => `
+    <div class="history-item" onclick="restoreAnalysis(${i})">
+      <div class="history-item-header">
+        <span class="history-item-cat">${a.category}</span>
+        <span class="history-item-time">${new Date(a.timestamp).toLocaleString()}</span>
+      </div>
+      <div class="history-item-preview">${escText(a.result.substring(0,150))}${a.result.length>150?'…':''}</div>
+    </div>`).join('');
+}
+
+function restoreAnalysis(idx) {
+  const a = analysisHistory[idx];
+  if (!a) return;
+  document.getElementById('analysisResult').style.display = 'block';
+  document.getElementById('resultLabel').innerHTML =
+    `<i class="fas fa-history"></i> ${a.category} (saved)`;
+  document.getElementById('resultContent').textContent = a.result;
+}
+
+function toggleHistory() {
+  historyOpen = !historyOpen;
+  document.getElementById('historyList').style.display = historyOpen ? 'block' : 'none';
+  document.getElementById('historyChevron').className = historyOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+}
+
+// =========================================================
+// CHAT HELPERS
+// =========================================================
+function addUserMsg(container, text) {
+  const d = document.createElement('div');
+  d.className = 'msg msg-user';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.textContent = text;
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  time.textContent = now();
+  d.appendChild(bubble); d.appendChild(time);
+  container.appendChild(d); container.scrollTop = 99999;
+}
+
+function addAIMsg(container, text) {
+  const d = document.createElement('div');
+  d.className = 'msg msg-ai';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.textContent = text;
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  time.textContent = now();
+  d.appendChild(bubble); d.appendChild(time);
+  container.appendChild(d); container.scrollTop = 99999;
+}
+
+function addStreamingMsg(container) {
+  const d = document.createElement('div');
+  d.className = 'msg msg-ai';
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  time.textContent = now();
+  d.appendChild(bubble); d.appendChild(time);
+  container.appendChild(d); container.scrollTop = 99999;
+  return bubble;
+}
+
+function addTyping(container) {
+  const d = document.createElement('div');
+  d.className = 'msg msg-ai';
+  d.innerHTML = `<div class="msg-bubble dots"><span></span><span></span><span></span></div>`;
+  container.appendChild(d); container.scrollTop = 99999;
+  return d;
+}
+
+function escText(t) {
+  return String(t)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+function now() { return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+
+// =========================================================
+// PROGRESS / TOAST / UTILS
+// =========================================================
+function setProgress(pct, label) {
+  document.getElementById('progressWrap').classList.add('show');
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = label;
+}
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast show' + (err ? ' err' : '');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function toBase64(file) {
+  return new Promise((res,rej) => {
+    const r = new FileReader(); r.readAsDataURL(file);
+    r.onload = () => res(r.result); r.onerror = rej;
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:www.usaswimming.org)",
+      "WebFetch(domain:swimstandards.com)",
+      "WebFetch(domain:www.swimcloud.com)",
+      "WebFetch(domain:websitedevsa.blob.core.windows.net)"
+    ]
+  }
+}
